@@ -1,6 +1,6 @@
-# AE508
-
-AE508 Course Project: Intercept and Deflect an Asteroid
+# AE508 Course Project: Intercept and Deflect an Asteroid
+Design an optimal trajectory for a spacecraft on a geostationary orbit
+to intercept an asteroid that is on the collision course with the Earth. 
 
 
 ## Team
