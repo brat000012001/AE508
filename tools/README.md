@@ -2,62 +2,74 @@
 
 Queries planetary or asteroid ephemeris using the Horizon API and converts the results to an STK planetary format (.pe)
 
-## Input
+## Heliocentric Input
 |         Parameter          |              Value                   |
 |----------------------------|--------------------------------------|
 | Dates                      |  2029-01-01  to 2030-01-01           |
 | Table format               |  x,y,z,vx,vy,vz                      |
 | Step Size                  | 10 minutes                           |
 | CSV format                 | YES                                  |
-| Origin                     |  Solar Barycentric                   |
+| Coordinate Center          |  Solar Barycentric (500@0)           |
 | Reference Frame            | ICRF                                 |
 
 
+## Geocentric Input
+|         Parameter          |              Value                   |
+|----------------------------|--------------------------------------|
+| Dates                      |  2029-01-01  to 2030-01-01           |
+| Table format               |  x,y,z,vx,vy,vz                      |
+| Step Size                  | 10 minutes                           |
+| CSV format                 | YES                                  |
+| Coordinate Center          | Geocentric (500)                     |
+| Reference Frame            | ICRF                                 |
+
+
+## Request the asteroid and the Earth position/velocity (Heliocentric)
 ```sh
-#Request the astero 2024 YR4 position/velocity information between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
+#Request the asteroid 2024 YR4 position/velocity information between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
 curl -s "https://ssd.jpl.nasa.gov/api/horizons.api?\
-    format=text\
-    &COMMAND='2024%20YR4'\
-    &OBJ_DATA=NO\
-    &MAKE_EPHEM=YES\
-    &EPHEM_TYPE=VECTORS\
-    &VEC_TABLE=2\
-    &START_TIME=2029-01-01\
-    &STOP_TIME=2030-01-01\
-    &STEP_SIZE='10m'\
-    &CSV_FORMAT=YES\
-    &CENTER='500@0'\
-    &REF_SYSTEM='ICRF'" | python horizons2pe.py
+format=text\
+&COMMAND='2024%20YR4'\
+&OBJ_DATA=NO\
+&MAKE_EPHEM=YES\
+&EPHEM_TYPE=VECTORS\
+&VEC_TABLE=2\
+&START_TIME=2029-01-01\
+&STOP_TIME=2030-01-01\
+&STEP_SIZE='10m'\
+&CSV_FORMAT=YES\
+&CENTER='500@0'\
+&REF_SYSTEM='ICRF'" | python horizons2pe.py
 
 # Request the asteroid Apophis position/velocity information between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
 curl -s "https://ssd.jpl.nasa.gov/api/horizons.api?\
-    format=text\
-    &COMMAND='Apophis'\
-    &OBJ_DATA=NO\
-    &MAKE_EPHEM=YES\
-    &EPHEM_TYPE=VECTORS\
-    &VEC_TABLE=2\
-    &START_TIME=2029-01-01\
-    &STOP_TIME=2030-01-01\
-    &STEP_SIZE='10m'\
-    &CSV_FORMAT=YES\
-    &CENTER='500@0'\
-    &REF_SYSTEM='ICRF'" | python horizons2pe.py
+format=text\
+&COMMAND='Apophis'\
+&OBJ_DATA=NO\
+&MAKE_EPHEM=YES\
+&EPHEM_TYPE=VECTORS\
+&VEC_TABLE=2\
+&START_TIME=2029-01-01\
+&STOP_TIME=2030-01-01\
+&STEP_SIZE='10m'\
+&CSV_FORMAT=YES\
+&CENTER='500@0'\
+&REF_SYSTEM='ICRF'" | python horizons2pe.py
 
 # Request the Earth's position/velocity information  between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
 curl -s "https://ssd.jpl.nasa.gov/api/horizons.api?\
-    format=text\
-    &COMMAND='399'\
-    &OBJ_DATA=NO\
-    &MAKE_EPHEM=YES\
-    &EPHEM_TYPE=VECTORS\
-    &VEC_TABLE=2\
-    &START_TIME=2029-01-01\
-    &STOP_TIME=2030-01-01\
-    &STEP_SIZE='10m'\
-    &CSV_FORMAT=YES\
-    &CENTER='500@0'\
-    &REF_SYSTEM='ICRF'" | python horizons2pe.py
+format=text\
+&COMMAND='399'\
+&OBJ_DATA=NO\
+&MAKE_EPHEM=YES\
+&EPHEM_TYPE=VECTORS\
+&VEC_TABLE=2\
+&START_TIME=2029-01-01\
+&STOP_TIME=2030-01-01\
+&STEP_SIZE='10m'\
+&CSV_FORMAT=YES\
+&CENTER='500@0'\
+&REF_SYSTEM='ICRF'" | python horizons2pe.py
 
 ```
 ## Example Output
@@ -75,4 +87,39 @@ EphemerisJ2000SciJedPosVel
 2462137.534722222 -7.976136426350090E+07 1.373909816855222E+08 -9.232590726826273E+06 -2.429171689072811E+01 -1.063338295131289E+01 1.450645102943504E-02
 ...
 END Ephemeris
+```
+
+## Request YR4 and Apophis asteroids' position/velocity (Geocentric)
+
+```sh
+#Request the asteroid 2024 YR4 position/velocity information between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
+curl -s "https://ssd.jpl.nasa.gov/api/horizons.api?\
+format=text\
+&COMMAND='2024%20YR4'\
+&OBJ_DATA=NO\
+&MAKE_EPHEM=YES\
+&EPHEM_TYPE=VECTORS\
+&VEC_TABLE=2\
+&START_TIME=2029-01-01\
+&STOP_TIME=2030-01-01\
+&STEP_SIZE='10m'\
+&CSV_FORMAT=YES\
+&CENTER='500'\
+&REF_SYSTEM='ICRF'" | python horizons2pe.py
+
+# Request the asteroid Apophis position/velocity information between 2029-01-01 and 2030-01-01 and convert it to STK Planetary Ephemeris 
+curl -s "https://ssd.jpl.nasa.gov/api/horizons.api?\
+format=text\
+&COMMAND='Apophis'\
+&OBJ_DATA=NO\
+&MAKE_EPHEM=YES\
+&EPHEM_TYPE=VECTORS\
+&VEC_TABLE=2\
+&START_TIME=2029-01-01\
+&STOP_TIME=2030-01-01\
+&STEP_SIZE='10m'\
+&CSV_FORMAT=YES\
+&CENTER='500'\
+&REF_SYSTEM='ICRF'" | python horizons2pe.py
+
 ```
