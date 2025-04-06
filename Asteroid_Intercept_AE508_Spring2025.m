@@ -5,7 +5,10 @@
 % Team: petern4@illinois.edu, pc46@illinois.edu, davisr2@illinois.edu
 %
 
-% 
+clear;
+format longg;
+
+% Calculate the state and costate differential equations
 function Xdot = eom(t,X)
     % Xdot = [rdot; vdot; mdot];
 end
@@ -16,3 +19,18 @@ end
 
 % 11 Apr 2029 00:26:00.000 UTCG is approximately the date/time when asteroid Apophis 
 % enters the Earth's SOI.The SOI was calculated using the Hill Radius (~ 234 Earth radii)
+
+%
+% Initial conditions
+% T = 1d, a = (T*sqrt(mu_earth)/(2*pi))^(2/3) = 42241.095610673336 km
+t0 = 0;
+r0 = [42241.095610673336, 0, 0]'; % km
+v0 = [0, 3.0718591585665633, 0]'; % km/s
+m0 = 500; % kg
+
+% Final condition constraints
+% Asteroid Apophis position in Inertnal frame centered at the Earth center
+tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
+rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the fina position
+vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
+2462237.520833333m0 = 500; % kg
