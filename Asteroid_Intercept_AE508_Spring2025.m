@@ -32,15 +32,19 @@ end
 % Initial condition
 % T = 1d, a = (T*sqrt(mu_earth)/(2*pi))^(2/3) = 42241.095610673336 km
 t0 = 0;
-r0 = [42241.095610673336, 0, 0]'; % km
-v0 = [0, 3.0718591585665633, 0]'; % km/s
-m0 = 500; % kg
+r0 = [42241.095610673336, 0, 0]'; % km, GEO orbit
+v0 = [0, 3.0718591585665633, 0]'; % km/s the velocity of a GEO satellite
+                                  % computed using the vis-viva eqn
+m0 = 500; % kg, the initial wet mass
 
 % Final condition
 % Asteroid Apophis position in Inertial reference frame centered at the
 % Earth center (ECI)
-tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
-rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the fina position
+% tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
+% TODO: guess the time of flight that makes sense given the 
+% satellite we want to hit the ateroid with is on a GEO orbit
+tf = ??? % time of flight, in seconds
+rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the final position
 % Velocity is free at final time
 % vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
 % mass is free at final time
