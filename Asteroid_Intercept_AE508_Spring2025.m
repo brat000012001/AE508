@@ -10,6 +10,14 @@ format longg;
 
 % Calculate the state and costate differential equations
 function Xdot = eom(t,X)
+
+    r = X(1:3);
+    v = X(4:6);
+    m = X(7);
+    %lam = X()
+
+    rdot = v;
+
     % Xdot = [rdot; vdot; mdot];
 end
 
@@ -21,16 +29,18 @@ end
 % enters the Earth's SOI.The SOI was calculated using the Hill Radius (~ 234 Earth radii)
 
 %
-% Initial conditions
+% Initial condition
 % T = 1d, a = (T*sqrt(mu_earth)/(2*pi))^(2/3) = 42241.095610673336 km
 t0 = 0;
 r0 = [42241.095610673336, 0, 0]'; % km
 v0 = [0, 3.0718591585665633, 0]'; % km/s
 m0 = 500; % kg
 
-% Final condition constraints
-% Asteroid Apophis position in Inertnal frame centered at the Earth center
+% Final condition
+% Asteroid Apophis position in Inertial reference frame centered at the
+% Earth center (ECI)
 tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
 rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the fina position
-vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
-2462237.520833333m0 = 500; % kg
+% Velocity is free at final time
+% vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
+% mass is free at final time
