@@ -9,6 +9,7 @@
 
 clear; close all; clc;
 format longg;
+addpath(".");
 
 % Calculate the state and costate differential equations
 function Xdot = eom(t,X,T,c,rho,mu)
@@ -47,32 +48,27 @@ function Xdot = eom(t,X,T,c,rho,mu)
     Xdot = [rdot; vdot; mdot; lam_r_dot; lam_v_dot; lam_m_dot];
 end
 
-function err = minFuel(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu)
-    [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    % TODO: this needs work (the dynamic equations are not set up to do
-    % minimum fuel)
-     % err = [[X(end,1:3)';X(end,4:6)] - [xf(1:3);X(end,4:6)]; lam0guess(7)];
-end
-
 function err = minT(lam0guess,t0,x0,xf,T,c,rho,opts_ode,m0,mu)
     tf = lam0guess(8);
     [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
     H = hamiltonian(t,X,T,c,rho,mu);
-    err = [X(end,1:7)' - [xf(1:3);X(end,4:7)']; H(end) + 1];
+    err = [X(end,1:3)' - xf(1:3); lam0guess(4:7); H(end) + 1];
 end
 
 function Hamiltonian = hamiltonian(t,X,T,c,rho,mu)
     Hamiltonian = zeros(length(t),1);
+    rvec = X(:,1:3);
+    vvec = X(:,4:6);
+    mvec = X(:,7);
+    rmag = vecnorm(rvec,2,2);
+    lam_r = X(:,8:10);
+    lam_v = X(:,11:13);
+    lam_m = X(:, 14);
+    uhat = -lam_v./vecnorm(lam_v,2,2);
     for idx = 1:length(t)
-        r = X(idx,1:3)';
-        v = X(idx,4:6)';
-        m = X(idx,7);
-        rmag = norm(r);
-        lam_r = X(idx,8:10);
-        lam_v = X(idx,11:13);
-        lam_m = X(idx, 14);
-        uhat = -lam_v/norm(lam_v);
-        Hamiltonian(idx) = lam_r*v - lam_v*r*mu/rmag^3 + lam_v*uhat'*T/m - lam_m*T/c; 
+        Hamiltonian(idx) = lam_r(idx,:)*vvec(idx,:)' ...
+            - lam_v(idx,:)*rvec(idx,:)'*mu/rmag(idx)^3 ...
+            + lam_v(idx,:)*uhat(idx,:)'*T/mvec(idx) - lam_m(idx)*T/c; 
     end
 end
 
@@ -95,35 +91,33 @@ m0 = 500; % kg, the initial wet mass
 % Earth center (ECI)
 rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the final position
 % Velocity is free at final time
-% vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
+vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
 % mass is free at final time
-
-% tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
-theta = acos((r0/norm(r0))'*(rf/norm(rf)));
-c = sqrt(r0'*r0 + rf'*rf - 2*norm(r0)*norm(rf)*cos(theta));
-s = (norm(r0) + norm(rf) + c)/2;
-% Minimum time of flight
-t_p = sqrt(2)/(3*sqrt(mu_e))*(sqrt(s^3) - sign(sin(theta))*sqrt((s - c)^3));
 
 % The time of flight that makes sense given the 
 % satellite we want to hit the ateroid with is on a GEO orbit
-tf = t_p; % time of flight, in seconds
+% t_min = 3335700.31527787
+tf = 3336000.31527787; % time of flight, in seconds
 
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
 options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
-T = 0.235/1000; % kN, Thrust magnitude
+T = 2.5035/1000; % kN, Thrust magnitude
 Isp = 4190; % seconds, specific impulse
 g0 = 9.8; % m/s^2 (Earth's surface gravity)
 c = Isp*g0/1000; % km/s Exhaust velocity
 
-x0 = [r0;v0];
+% Solve the Lambert's equation analytically
+[v1,v2] = lambert(r0,rf,tf,mu_e);
+
+x0 = [r0;v1];
 xf = [rf;0;0;0];
 
 rho = 1.0;
-lam_guess = [0.01;0.01;0.01;0.01;0.01;0.01;0.01;tf];
+%
+lam_guess = [1e-5*ones(7,1);tf];
 [p0,~] = fsolve(@minT,lam_guess,options,t0,x0,xf,T,c,rho,opts_ode,m0,mu_e);
 [t, X] = ode45(@eom, [t0 p0(8)], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
 H = hamiltonian(t,X,T,c,rho,mu_e);
@@ -131,6 +125,35 @@ plot(t,H);
 plot_trajectory(t,X,r0,rf);
 plot_states(t,X);
 plot_costates(t,X);
+plot_control(t,X);
+
+%{
+[v1,v2] = lambert(r0,rf,tf,mu_e);
+lam_guess = [1e-5;1e-5;1e-5;1e-5;1e-5;1e-5;1e-5;tf];
+[t, X] = ode45(@eom, [t0 tf], [[r0;v1]; m0; lam_guess(1:7)],opts_ode,T,c,rho,mu_e);
+plot_trajectory(t,X,r0,rf);
+%}
+
+function plot_control(t,X)
+    u = X(:,11:13)./vecnorm(X(:,11:13),2,2);
+
+    figure;
+    title('Control');
+    subplot(3,1,1);
+    plot(t,u(:,1),'LineWidth', 1.5);
+    xlabel('t (sec)');
+    ylabel('u_x');
+
+    subplot(3,1,2);
+    plot(t,u(:,2),'LineWidth', 1.5);
+    xlabel('t (sec)');
+    ylabel('u_y');
+    
+    subplot(3,1,3);
+    plot(t,u(:,3),'LineWidth', 1.5);
+    xlabel('t (sec)');
+    ylabel('u_z');
+end
 
 function plot_trajectory(t, X, r0, rf)
     figure;
