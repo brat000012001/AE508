@@ -52,7 +52,16 @@ function err = minT(lam0guess,t0,x0,xf,T,c,rho,opts_ode,m0,mu)
     tf = lam0guess(8);
     [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
     H = hamiltonian(t,X,T,c,rho,mu);
-    err = [X(end,1:3)' - xf(1:3); lam0guess(4:7); H(end) + 1];
+    err = [X(end,1:3)' - xf(1:3); X(end,11:14)'; H(end) + 1];
+end
+
+function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu)
+    v_a = xf(4:6); % the velocity of the asteroid
+    [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
+    m_tf = X(end,7);
+    lam_v_tf = X(end,11:13)';
+    lam_m_tf = X(end, 14);
+    err = [X(end,1:3)' - xf(1:3); lam_v_tf + [m_tf;m_tf;m_tf]; lam_m_tf+norm(X(end,4:6))];
 end
 
 function Hamiltonian = hamiltonian(t,X,T,c,rho,mu)
@@ -100,8 +109,8 @@ vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % t
 tf = 3336000.31527787; % time of flight, in seconds
 
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
-    'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
+options = optimoptions('fsolve','Display','iter','MaxFunEvals',2e3,...
+    'MaxIter',2e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
 T = 2.5035/1000; % kN, Thrust magnitude
@@ -113,13 +122,22 @@ c = Isp*g0/1000; % km/s Exhaust velocity
 [v1,v2] = lambert(r0,rf,tf,mu_e);
 
 x0 = [r0;v1];
-xf = [rf;0;0;0];
+xf = [rf;vf];
 
 rho = 1.0;
 %
-lam_guess = [1e-5*ones(7,1);tf];
-[p0,~] = fsolve(@minT,lam_guess,options,t0,x0,xf,T,c,rho,opts_ode,m0,mu_e);
-[t, X] = ode45(@eom, [t0 p0(8)], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
+%
+% minimum time
+%
+% lam_guess = [1e-5*ones(7,1);tf];
+% [p0,~] = fsolve(@minT,lam_guess,options,t0,x0,xf,T,c,rho,opts_ode,m0,mu_e);
+% [t, X] = ode45(@eom, [t0 p0(8)], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
+
+% Maximum momentum transfer
+lam_guess = [1e-5*ones(7,1)];
+[p0,~] = fsolve(@maxMomentum,lam_guess,options,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu_e);
+[t, X] = ode45(@eom, [t0 tf], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
+
 H = hamiltonian(t,X,T,c,rho,mu_e);
 plot(t,H);
 plot_trajectory(t,X,r0,rf);
