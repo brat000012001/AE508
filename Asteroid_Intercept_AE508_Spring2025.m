@@ -34,18 +34,24 @@ function Xdot = eom(t,X,T,c,rho,mu)
     y = r(2);
     z = r(3);
 
-    scalar = -mu/((x^2+y^2+z^2)^(5/2));
-    lam_r_dot = [
-        scalar*lam_v'*[2*x^2-y^2-z^2;      3*x*y;            3*x*z];
-        scalar*lam_v'*[3*x*y; -x^2 + 2*y^2 - z^2;            3*y*z];
-        scalar*lam_v'*[3*x*z;              3*y*z;2*z^2 - x^2 - y^2]
-        ];
+    rnorm = norm(r);
+    g11 = 3*mu*x^2/rnorm^5 - mu/rnorm^3;
+    g12 = 3*mu*x*y/rnorm^5;
+    g13 = 3*mu*x*z/rnorm^5;
+    g21 = 3*mu*x*y/rnorm^5;
+    g22 = 3*mu*y^2/rnorm^5 - mu/rnorm^3;
+    g23 = 3*mu*y*z/rnorm^5;
+    g31 = 3*mu*x*z/rnorm^5;
+    g32 = 3*mu*y*z/rnorm^5;
+    g33 = 3*mu*z^2/rnorm^5 - mu/rnorm^3;
+    G = [g11 g12 g13; g21 g22 g23; g31 g32 g33];
 
+    % Page 136 in the Notes, 
+    lam_r_dot = -lam_v'*G;
     lam_v_dot = -lam_r;
-
     lam_m_dot = -T/m^2*(lam_v'*uhat);
 
-    Xdot = [rdot; vdot; mdot; lam_r_dot; lam_v_dot; lam_m_dot];
+    Xdot = [rdot; vdot; mdot; lam_r_dot'; lam_v_dot; lam_m_dot];
 end
 
 function err = minT(lam0guess,t0,x0,xf,T,c,rho,opts_ode,m0,mu)
@@ -55,13 +61,37 @@ function err = minT(lam0guess,t0,x0,xf,T,c,rho,opts_ode,m0,mu)
     err = [X(end,1:3)' - xf(1:3); X(end,11:14)'; H(end) + 1];
 end
 
-function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu)
-    v_a = xf(4:6); % the velocity of the asteroid
+function PhiDot = phidot(v,m,va,ma)
+    denom = sqrt(m^2*dot(v,v) + ma^2*dot(va,va) - 2*m*ma*dot(v,va));
+    lam_x = m*(m*v(1) - ma*va(1))/denom;
+    lam_y = m*(m*v(2) - ma*va(2))/denom;
+    lam_z = m*(m*v(3) - ma*va(3))/denom;
+    lam_m = m*dot(v,v) - ma*dot(va,v);
+    PhiDot = [-lam_x; -lam_y; -lam_z;-lam_m];
+end
+
+function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
+    vvec_a = xf(4:6); % the velocity of the asteroid
     [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
     m_tf = X(end,7);
     lam_v_tf = X(end,11:13)';
     lam_m_tf = X(end, 14);
-    err = [X(end,1:3)' - xf(1:3); lam_v_tf + [m_tf;m_tf;m_tf]; lam_m_tf+norm(X(end,4:6))];
+    vvec_tf = X(end,4:6);
+
+    PhiDot = phidot(vvec_tf,m_tf,vvec_a,m_a);
+    H = hamiltonian(t,X,T,c,rho,mu);
+    phi = -sqrt(m_tf^2*dot(vvec_tf,vvec_tf) + ...
+        m_a^2*dot(vvec_a,vvec_a) - 2*m_tf*m_a*dot(vvec_tf,vvec_a));
+
+    err = [X(end,1:3)' - xf(1:3);
+        X(end,11:14)';
+        H(end) + phi];
+    %{
+    err = [X(end,1:3)' - xf(1:3);
+        X(end,8:10)';
+        lam_v_tf - PhiDot(1:3);
+        lam_m_tf - PhiDot(4)];
+    %}
 end
 
 function Hamiltonian = hamiltonian(t,X,T,c,rho,mu)
@@ -99,9 +129,10 @@ m0 = 500; % kg, the initial wet mass
 % Asteroid Apophis position in Inertial reference frame centered at the
 % Earth center (ECI)
 rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; % the final position
-% Velocity is free at final time
+% The asteroid velocity at the time of the intercept
 vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
-% mass is free at final time
+% The mass of the hypothetical asteroid
+m_a = 2.2e8; % kg, the mass of 2024 YR4 asteroid
 
 % The time of flight that makes sense given the 
 % satellite we want to hit the ateroid with is on a GEO orbit
@@ -109,8 +140,8 @@ vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % t
 tf = 3336000.31527787; % time of flight, in seconds
 
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-options = optimoptions('fsolve','Display','iter','MaxFunEvals',2e3,...
-    'MaxIter',2e3,'TolFun',1e-12,'TolX',1e-14,...
+options = optimoptions('fsolve','Display','iter','MaxFunEvals',5e3,...
+    'MaxIter',5e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
 T = 2.5035/1000; % kN, Thrust magnitude
@@ -122,25 +153,34 @@ c = Isp*g0/1000; % km/s Exhaust velocity
 [v1,v2] = lambert(r0,rf,tf,mu_e);
 
 x0 = [r0;v1];
+%x0 = [r0;v0];
 xf = [rf;vf];
 
 rho = 1.0;
+%{
 %
+% Solve Minimum Time Optimal trajectory problem.
 %
-% minimum time
+lam_guess = [1e-5*ones(7,1);tf];
+[p0,~] = fsolve(@minT,lam_guess,options,t0,x0,xf,T,c,rho,opts_ode,m0,mu_e);
+[t, X] = ode45(@eom, [t0 p0(8)], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
 %
-% lam_guess = [1e-5*ones(7,1);tf];
-% [p0,~] = fsolve(@minT,lam_guess,options,t0,x0,xf,T,c,rho,opts_ode,m0,mu_e);
-% [t, X] = ode45(@eom, [t0 p0(8)], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
+%p0(8) - tf
+%}
 
-% Maximum momentum transfer
-lam_guess = [1e-5*ones(7,1)];
-[p0,~] = fsolve(@maxMomentum,lam_guess,options,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu_e);
+%
+% Solve Maximum momentum transfer optimal trajectory problem.
+%
+lam_guess = [1e-5*ones(7,1);tf];
+% Solve the minimum time optimal trajectory problem to the minimum time of
+% flight
+[p0,~] = fsolve(@maxMomentum,lam_guess,options,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu_e);
 [t, X] = ode45(@eom, [t0 tf], [x0; m0; p0(1:7)],opts_ode,T,c,rho,mu_e);
+%
 
 H = hamiltonian(t,X,T,c,rho,mu_e);
 plot(t,H);
-plot_trajectory(t,X,r0,rf);
+plot_trajectory(t,X,r0,v0,mu_e);
 plot_states(t,X);
 plot_costates(t,X);
 plot_control(t,X);
@@ -173,14 +213,15 @@ function plot_control(t,X)
     ylabel('u_z');
 end
 
-function plot_trajectory(t, X, r0, rf)
+function plot_trajectory(t, X, r0, v0, mu)
     figure;
-    % grid on; hold on;
+    hold on;
     plot3(X(:,1),X(:,2),X(:,3));
     %scatter(0,0,0,'*r'); % The origin of the central body (the Earth)
     %scatter(r0(1),r0(2),r0(3),'*b');
     %plot3(rf(1),rf(2),rf(3),'*g');
-    % hold off;
+    plot_asteroid_trajectory(t(1), t(end), r0, v0, mu);
+    hold off;
 end
 
 function plot_costates(t, X)
@@ -288,4 +329,19 @@ function plot_states(t,X)
     ylabel('m (kg)');
     
     hold off;
+end
+
+function plot_asteroid_trajectory(t0,tf,r0,v0,mu)
+
+    function XDot = eom_aroid(t,X,mu)
+        r = X(1:3);
+        v = X(4:6);
+        rdot = v;
+        vdot = -mu/norm(r)^3*r;
+        XDot = [rdot; vdot];
+    end
+
+    opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
+    [t, X] = ode45(@eom_aroid, [t0 tf], [r0; v0],opts_ode,mu);
+    plot3(X(:,1),X(:,2),X(:,3),'LineWidth',1.5);
 end
