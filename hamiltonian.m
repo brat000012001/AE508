@@ -24,4 +24,3 @@ function Hamiltonian = hamiltonian(t,X,T,c,rho,mu)
             + lam_v(idx,:)*uhat(idx,:)'*T/mvec(idx) - lam_m(idx)*T/c; 
     end
 end
-

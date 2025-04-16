@@ -17,20 +17,21 @@ function Xdot = eom(t,X,T,c,rho,mu)
     lam_v = X(11:13);
     lam_m = X(14);
 
+    rnorm = norm(r);
+
     % S = c/m*norm(lam_v) + lam_m - 1; % switch function
     % delta = 0.5*(1 + tanh(S/rho));
 
     uhat = -lam_v/norm(lam_v);
     
     rdot = v;
-    vdot = -mu/norm(r)^3*r + T/m*uhat;
+    vdot = -mu/rnorm^3*r + T/m*uhat;
     mdot = -T/c;
 
     x = r(1);
     y = r(2);
     z = r(3);
 
-    rnorm = norm(r);
     g11 = 3*mu*x^2/rnorm^5 - mu/rnorm^3;
     g12 = 3*mu*x*y/rnorm^5;
     g13 = 3*mu*x*z/rnorm^5;

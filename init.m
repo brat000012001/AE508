@@ -33,11 +33,6 @@ function state = init()
     % satellite we want to hit the ateroid with is on a GEO orbit
     state.tf = 3779250.236767169; % time of flight, in seconds
     
-    state.opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-    state.options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
-        'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
-        'UseParallel',false);
-    
     state.T = 2.5035/1000; % kN, Thrust magnitude
     state.Isp = 4190; % seconds, specific impulse
     state.g0 = 9.8; % m/s^2 (Earth's surface gravity)

@@ -3,21 +3,42 @@
 % Course Project
 % Author: Peter Nalyvayko (petern4@illinois.edu)
 %
+% The solution converged at:
+% p0 =
+%          -22.695386181372
+%          5.26021400220219
+%          2.32913168508524
+%          410860.124727701
+%         -294503.735727665
+%         -130401.155156875
+%         -68.2065539054517
+%          691344.297345835
+% The minimum time of flight: 691344.297345835 = 8 days
+% Amont of fuel left = 497.892479118886
+%
+% fsolve output:
+% 118        903         8.82637e-16    5.36522e-14           0.0134       5.37e-14
+% 119        904         8.82637e-16    1.34131e-14           0.0134       1.34e-14
+% 120        905         8.82637e-16    3.35327e-15           0.0134       3.35e-15
+% 121        906         8.82637e-16    8.38316e-16           0.0134       8.38e-16
+
 
 clearvars; close all; clc;
 format longg;
 addpath(".");
 
-function err = minT(lam0guess,t0,x0,xf,T,c,rho,opts_ode,m0,mu)
-    tf = lam0guess(8);
-    [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    H = hamiltonian(t,X,T,c,rho,mu);
+function err = minU(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu)
+    tf_guess = lam0guess(8);
+    [t, X] = ode45(@eom, [t0 tf_guess], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
+    H = hamiltonian_minFuel(t,X,T,c,rho,mu);
     err = [X(end,1:3)' - xf(1:3); X(end,11:14)'; H(end) + 1];
 end
 
 
 % Get the initial state values
 state_values = init();
+state_values.tf = 729250.236767169; % time of flight, in seconds
+state_values.T = state_values.T * 0.05;
 
 % Solve the Lambert's equation analytically
 [v1,v2] = lambert(state_values.r0, ...
@@ -31,18 +52,19 @@ xf = [state_values.rf;state_values.vf];
 rho = 1.0;
 %
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
-    'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
+options = optimoptions('fsolve','Display','iter','MaxFunEvals',2e3,...
+    'MaxIter',2e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
 %
-% Solve Minimum Time Optimal trajectory problem.
+% Solve Minimum Fuel Optimal trajectory problem.
 %
-lam_guess = [1e-5*ones(7,1);state_values.tf];
-[p0,~] = fsolve(@minT, ...
+lam_guess = [1e-5*ones(7,1); state_values.tf];
+[p0,~] = fsolve(@minU, ...
     lam_guess, ...
     options, ...
     state_values.t0, ...
+    state_values.tf, ...
     x0, ...
     xf, ...
     state_values.T, ...
