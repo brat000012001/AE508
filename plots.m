@@ -1,4 +1,4 @@
-function plots(t,X,r0,v0,mu)
+function plots(t,X,r0,rf,mu)
 
     function plot_control(t,X)
         u = X(:,11:13)./vecnorm(X(:,11:13),2,2);
@@ -22,15 +22,14 @@ function plots(t,X,r0,v0,mu)
     end
 
 
-    function plot_trajectory(t, X, r0, v0, mu)
-        figure;
-        %hold on;
+    function plot_trajectory(t, X, r0, rf, mu)
+        figure;  
         plot3(X(:,1),X(:,2),X(:,3));
-        %scatter(0,0,0,'*r'); % The origin of the central body (the Earth)
-        %scatter(r0(1),r0(2),r0(3),'*b');
-        %plot3(rf(1),rf(2),rf(3),'*g');
+        hold on;
+        plot3(r0(1),r0(2),r0(3),'*b');
+        plot3(rf(1),rf(2),rf(3),'*g');
         %plot_asteroid_trajectory(t(1), t(end), r0, v0, mu);
-        %hold off;
+        hold off;
     end
 
 
@@ -159,7 +158,7 @@ function plots(t,X,r0,v0,mu)
     end
     %}
 
-    plot_trajectory(t,X,r0,v0,mu);
+    plot_trajectory(t,X,r0,rf,mu);
     plot_states(t,X);
     plot_costates(t,X);
     plot_control(t,X);

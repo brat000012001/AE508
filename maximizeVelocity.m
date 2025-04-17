@@ -2,55 +2,26 @@
 % AE508 Optimal Space Trajectories, Spring 2025
 % Course Project
 % 
-% Team: petern4@illinois.edu, pc46@illinois.edu, davisr2@illinois.edu
-%
+% Peter Nalyvayko (petern4@illinois.edu)
+% Maximize the velocity of the spacecraft at the time of intercept
 
 clearvars; close all; clc;
 format longg;
 addpath(".");
 
-%
-% Compute the partial derivative of the terminal cost wrt state vector
-% The terminal cost is defined as diff
-function PhiDot = terminal_cost(v,m,va,ma)
-    denom = sqrt(m^2*dot(v,v) + ma^2*dot(va,va) - 2*m*ma*dot(v,va));
-    lam_x = m*(m*v(1) - ma*va(1))/denom;
-    lam_y = m*(m*v(2) - ma*va(2))/denom;
-    lam_z = m*(m*v(3) - ma*va(3))/denom;
-    lam_m = m*dot(v,v) - ma*dot(va,v);
-    PhiDot = [-lam_x; -lam_y; -lam_z;-lam_m];
-end
-
-function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
+function err = maxFinalVelocity(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,mu)
     [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    m_tf = X(end,7);
-    vvec_tf = X(end,4:6);
-    vvec_a = xf(4:6); % the velocity of the asteroid
-
-    PhiDot = terminal_cost(vvec_tf,m_tf,vvec_a,m_a);
-    % See my notes, page 101, the last term H(end) + 1
     % See my notes, page 120, boundary conditions
-    err = [X(end,1:3)' - xf(1:3); X(end,11:14)' - PhiDot];
-    % err = [X(end,1:3)' - xf(1:3); X(end,11:14)'];
+    % The mass at the final time is free
+    err = [X(end,1:3)' - xf(1:3); X(end,11:13)' + 1; X(end,14)];
 end
 
-function err = maxMomentumMinTime(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
-    tf_guess = lam0guess(8);
-    [t, X] = ode45(@eom, [t0 tf_guess], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    m_tf = X(end,7);
-    vvec_tf = X(end,4:6);
-    vvec_a = xf(4:6); % the velocity of the asteroid
-
-    PhiDot = terminal_cost(vvec_tf,m_tf,vvec_a,m_a);
-    H = hamiltonian(t,X,T,c,rho,mu);
-    % See my notes, page 101, the last term H(end) + 1
-    % See my notes, page 120, boundary conditions
-    err = [X(end,1:3)' - xf(1:3); X(end,11:14)' - PhiDot; H(end) + 1];
-end
 
 state_values = init();
-state_values.tf = 709250.237098388; % time of flight, in seconds
-%state_values.T = state_values.T * 0.05;
+state_values.tf = 429250.237098388; % time of flight, in seconds
+
+% Reduce the thrust magnitude in attempt to converge to a solution
+% state_values.T = state_values.T * 0.1;
 
 % Solve the Lambert's equation analytically
 [v1,v2] = lambert( ...
@@ -71,12 +42,11 @@ options = optimoptions('fsolve','Display','iter','MaxFunEvals',2e3,...
     'MaxIter',2e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 %
-% Solve Maximum momentum transfer optimal trajectory problem.
+% Solve optimal trajectory problem by maximizing the velocity a
+% the time of intercept.
 %
-lam_guess = [1e-5*ones(7,1); state_values.tf];
-%lam_guess = 1e-5*ones(7,1);
-%[p0,~] = fsolve(@maxMomentum, ...
-[p0,~] = fsolve(@maxMomentumMinTime, ...
+lam_guess = 1e-5*ones(7,1);
+[p0,~] = fsolve(@maxFinalVelocity, ...
     lam_guess, ...
     options, ...
     state_values.t0, ...
@@ -88,9 +58,8 @@ lam_guess = [1e-5*ones(7,1); state_values.tf];
     rho, ...
     opts_ode, ...
     state_values.m0, ...
-    state_values.m_a, ...
     state_values.mu);
-[t, X] = ode45(@eom, [state_values.t0 p0(8)], ...
+[t, X] = ode45(@eom, [state_values.t0 state_values.tf], ...
     [x0; state_values.m0; p0(1:7)], ...
     opts_ode, ...
     state_values.T, ...

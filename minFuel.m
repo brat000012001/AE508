@@ -37,8 +37,8 @@ end
 
 % Get the initial state values
 state_values = init();
-state_values.tf = 729250.236767169; % time of flight, in seconds
-state_values.T = state_values.T * 0.05;
+%state_values.tf = 729250.236767169; % time of flight, in seconds
+%state_values.T = state_values.T * 0.05;
 
 % Solve the Lambert's equation analytically
 [v1,v2] = lambert(state_values.r0, ...
@@ -91,5 +91,5 @@ plot(t, H,'LineWidth', 1.5);
 % Plot the optimal trajectory, states, control and costates
 plots(t,X, ...
     state_values.r0, ...
-    state_values.v0, ...
+    state_values.rf, ...
     state_values.mu);

@@ -1,4 +1,18 @@
-function [v1,v2] = lambert(p1,p2,t,mu)
+%
+% AE508 Optimal Space Trajectories, Spring 2025
+% Course Project
+% Author: Peter Nalyvayko (petern4@illinois.edu)
+% Source: Orbital Mechanics for Engineering Students 
+function [v1,v2] = lambert(p1, p2, t, mu, string)
+%{
+The function solves the Lambert's Problem.
+
+p1, p2   - initial and final position vectors (km)
+v1, v2   - initial and final velocity vectors (km/s)
+mu       - gravitational parameter (km^3/s^2)
+string   - 'pro'   if the trajectory is prograde
+           'retro' if the trajectory is retrograde
+%}
 
     r1 = norm(p1);
     r2 = norm(p2);
@@ -6,9 +20,20 @@ function [v1,v2] = lambert(p1,p2,t,mu)
     c12 = cross(p1,p2);
     theta = acos(dot(p1,p2)/r1/r2);
 
-    % Assume we always want the prograde orbit
-    if c12(3) <= 0
-       theta = 2*pi - theta;
+    % Determine whether orbit is prograde or retrograde
+    if nargin < 5 || (~strcmp(string,'retro') & (~strcmp(string,'pro')))
+        string = 'pro';
+        fprintf("\n Prograde trajectory assumed.\n");
+    end
+
+    if strcmp(string,'pro')
+        if c12(3) <= 0
+           theta = 2*pi - theta;
+        end
+    elseif strcmp(string,'retro')
+        if c12(3) >= 0
+            theta = 2*pi - theta;
+        end
     end
 
     % Equation 5.35
