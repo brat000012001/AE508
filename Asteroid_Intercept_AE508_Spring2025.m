@@ -31,7 +31,7 @@ function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
     [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
     % See my notes, page 120, boundary conditions
     PhiDot = terminal_cost(X(end,4:6),X(end,7),xf(4:6),m_a);
-    err = [X(end,1:3)' - xf(1:3); X(end,11:13)' - PhiDot'; X(end,14)];
+    err = [X(end,1:3)' - xf(1:3); X(end,11:14)' - PhiDot'];
 end
 
 
