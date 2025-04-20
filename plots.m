@@ -1,4 +1,4 @@
-function plots(t,X,r0,rf,mu)
+function S = plots()
 
     function plot_control(t,X)
         u = X(:,11:13)./vecnorm(X(:,11:13),2,2);
@@ -22,13 +22,12 @@ function plots(t,X,r0,rf,mu)
     end
 
 
-    function plot_trajectory(t, X, r0, rf, mu)
-        figure;  
+    function plot_trajectory(t, X, r0, rf)
+        figure;
         plot3(X(:,1),X(:,2),X(:,3));
         hold on;
         plot3(r0(1),r0(2),r0(3),'*b');
         plot3(rf(1),rf(2),rf(3),'*g');
-        %plot_asteroid_trajectory(t(1), t(end), r0, v0, mu);
         hold off;
     end
 
@@ -141,26 +140,9 @@ function plots(t,X,r0,rf,mu)
         hold off;
     end
 
-    %{
-    function plot_asteroid_trajectory(t0,tf,r0,v0,mu)
-    
-        function XDot = eom_aroid(t,X,mu)
-            r = X(1:3);
-            v = X(4:6);
-            rdot = v;
-            vdot = -mu/norm(r)^3*r;
-            XDot = [rdot; vdot];
-        end
-    
-        opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-        [t, X] = ode45(@eom_aroid, [t0 tf], [r0; v0],opts_ode,mu);
-        plot3(X(:,1),X(:,2),X(:,3),'LineWidth',1.5);
-    end
-    %}
-
-    plot_trajectory(t,X,r0,rf,mu);
-    plot_states(t,X);
-    plot_costates(t,X);
-    plot_control(t,X);
+    S.trajectory = @(t,X,r0,rf) plot_trajectory(t,X,r0,rf);
+    S.states = @(t,X) plot_states(t,X);
+    S.costates = @(t,X) plot_costates(t,X);
+    S.control = @(t,X) plot_control(t,X);
 
 end
