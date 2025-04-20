@@ -27,30 +27,27 @@ function XDot = eom_scraft(t,X,mu)
     XDot = eom_aroid(t,X,mu);
 end
 
-%
-% Compute the partial derivative of the terminal cost wrt state vector
-% The terminal cost is defined as diff
-function PhiDot = terminal_cost(v,m,va,ma)
-    denom = sqrt(m^2*dot(v,v) + ma^2*dot(va,va) - 2*m*ma*dot(v,va));
-    xdot = -m*(m*v(1) - ma*va(1))/denom;
-    ydot = -m*(m*v(2) - ma*va(2))/denom;
-    zdot = -m*(m*v(3) - ma*va(3))/denom;
-    mdot = -m*dot(v,v) - ma*dot(va,v);
-    PhiDot = [xdot; ydot; zdot; mdot];
-end
-
-function err = minT(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
-    tf_guess = lam0guess(8);
-    [t, X] = ode45(@eom, [t0 tf_guess], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    % PhiDot = terminal_cost(X(end,4:6),X(end,7),xf(4:6),m_a);
+function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
+    [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
     % See my notes, page 120, boundary conditions
-    % err = [X(end,1:3)' - xf(1:3); X(end,11:14)' - PhiDot];
-    H = hamiltonian(t,X,T,c,rho,mu);
-    err = [X(end,1:3)' - xf(1:3); X(end,11:14)'; H(end) + 1];
+    PhiDot = terminal_cost(X(end,4:6),X(end,7),xf(4:6),m_a);
+    err = [X(end,1:3)' - xf(1:3); X(end,11:13)' - PhiDot'; X(end,14)];
 end
 
 
 state_values = init();
+state_values.tf = 15*1.002 * 86400; % optimal time of flight 5.29552915031233 days
+state_values.T = 2.5/1000;
+
+%{
+state_values.tf = 15 * 86400;
+state_values.T = 2.5/1000;
+
+   125        784             5.89324    3.13935e-10         9.31e+08       3.14e-10
+   126        785             5.89324    3.13935e-10         9.31e+08       3.14e-10
+   127        793             5.89324    7.84836e-11         5.23e+08       7.85e-11
+   128        801             5.89324    7.84836e-11         9.47e+08       7.85e-11
+%}
 
 x0 = [state_values.r0;state_values.v0];
 xf = [state_values.rf;state_values.vf];
@@ -58,20 +55,20 @@ xf = [state_values.rf;state_values.vf];
 rho = 1.0;
 %
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
-    'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
+options = optimoptions('fsolve','Display','iter','MaxFunEvals',10e3,...
+    'MaxIter',10e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 %
 % Solve Maximum momentum transfer optimal trajectory problem.
 %
-lam_guess = [1e-5*ones(7,1);state_values.tf];
+lam_guess = [1e-5*ones(7,1)];
 iter = 0;
 maxIter = 1000;
 plotSet = plots();
 while iter < maxIter
     write_to_file(state_values.logfile,lam_guess);
     iter = iter + 1;
-    [p0,~,exitflag, output] = fsolve(@minT,...
+    [p0,~,exitflag, output] = fsolve(@maxMomentum,...
         lam_guess, ...
         options, ...
         state_values.t0, ...
@@ -97,7 +94,7 @@ while iter < maxIter
         break;
     end
 end
-[t, X] = ode45(@eom, [state_values.t0 p0(8)], ...
+[t, X] = ode45(@eom, [state_values.t0 state_values.tf], ...
     [x0; state_values.m0; p0(1:7)], ...
     opts_ode, ...
     state_values.T, ...
