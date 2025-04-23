@@ -9,42 +9,23 @@ clearvars; close all; clc;
 format longg;
 addpath(".");
 
-function XDot = eom_aroid(t,X,mu)
-    r = X(1:3);
-    v = X(4:6);
-    rdot = v;
-    vdot = -mu/norm(r)^3*r;
-    XDot = [rdot; vdot];
-end
+%
+opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
+options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
+    'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
+    'UseParallel',false);
 
-function XDot = eom_scraft(t,X,mu)
-    XDot = eom_aroid(t,X,mu);
-end
-
-function err = maxMomentum(lam0guess,t0,tf,x0,xf,T,c,rho,opts_ode,m0,m_a,mu)
-    [t, X] = ode45(@eom, [t0 tf], [x0; m0; lam0guess(1:7)],opts_ode,T,c,rho,mu);
-    % See my notes, page 120, boundary conditions
-    PhiDot = terminal_cost(X(end,4:6),X(end,7),xf(4:6),m_a);
-    err = [X(end,1:3)' - xf(1:3); X(end,11:14)' - PhiDot'];
-end
-
-
-state_values = init();
+state_values = initial_values();
 
 x0 = [state_values.r0;state_values.v0];
 xf = [state_values.rf;state_values.vf];
-
 rho = 1.0;
-%
-opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-options = optimoptions('fsolve','Display','iter','MaxFunEvals',10e3,...
-    'MaxIter',10e3,'TolFun',1e-12,'TolX',1e-14,...
-    'UseParallel',false);
+
 %
 % Solve Maximum momentum transfer optimal trajectory problem.
 %
 lam_guess = 1e-5*ones(7,1);
-[p0,~,exitflag, output] = fsolve(@maxMomentum,...
+[p0,~,exitflag, output] = fsolve(@max_momentum,...
     lam_guess, ...
     options, ...
     state_values.t0, ...
@@ -69,11 +50,11 @@ lam_guess = 1e-5*ones(7,1);
 
 % Propagate the asteroid trajectory
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-[ta, Xa] = ode45(@eom_aroid, [0 86400*1.2], ...
+[ta, Xa] = ode45(@two_body, [0 86400*1.2], ...
     [state_values.rf; state_values.vf], ...
     opts_ode, ...
     state_values.mu);
-[tsp, Xsp] = ode45(@eom_scraft, [0 86400], ...
+[tsp, Xsp] = ode45(@two_body, [0 86400], ...
     [state_values.r0; state_values.v_geo], ...
     opts_ode, ...
     state_values.mu);
