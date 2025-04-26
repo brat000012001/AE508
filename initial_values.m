@@ -1,5 +1,5 @@
 
-function state = initial_values(trueAnomaly, timeOfFlight, thrustMagnitude)
+function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitude)
 % Returns the initial and terminal state values (positions & velocities),
 % thrust magnitude, the standard gravitational parameter, initial and  
 % final times, the initial wet mass of the spacecraft, specific impulse,
@@ -9,8 +9,9 @@ function state = initial_values(trueAnomaly, timeOfFlight, thrustMagnitude)
 % - trueAnomaly:     the true anomaly orbital parameter for the spacecraft on GEO
 %                    orbit. Specified in radians
 % - timeOfFlight:    desired fixed time of flight. Specified in days.
-% - thrustMagnitude: thrust magnitude, in N. By default, the thrust magnitude
-%                    is set to 2.5 N
+% - incl:            departure orbit inclination (radians). Default is 0 rad
+% - thrust_magnitude: Thrust Magnitude in N
+%
     addpath(".");
     state.mu = 398600.44; % the Earth's gravitational parameter 
     %
@@ -30,10 +31,14 @@ function state = initial_values(trueAnomaly, timeOfFlight, thrustMagnitude)
     end
 
     if nargin < 3
-        thrustMagnitude = 2.5;
+        incl = 0;
     end
 
-    [r0,v0] = classical2posvel(R, 0.0, 0.0, 0.0, 0.0, trueAnomaly, state.mu);
+    if nargin < 4
+        thrust_magnitude = 2.5;
+    end
+
+    [r0,v0] = classical2posvel(R, 0.0, 0.0, incl, 0.0, trueAnomaly, state.mu);
     state.r0 = r0; % km/s initial velocity
     state.v0 = sqrt(2*state.mu/R)*v0/norm(v0); % km/s initial velocity
     % The position of asteroid Apophis at 2462239.715277778, A.D. 2029-Apr-13 05:10:00.0000
@@ -46,7 +51,7 @@ function state = initial_values(trueAnomaly, timeOfFlight, thrustMagnitude)
     state.Isp = 4190; % seconds, specific impulse
     state.g0 = 9.8; % m/s^2 (Earth's surface gravity)
     state.c = state.Isp*state.g0/1000; % km/s Exhaust velocity
-    state.T = thrustMagnitude/1000; % kN, Thrust magnitude
+    state.T = thrust_magnitude/1000; % kN, Thrust magnitude
     % The mass of the hypothetical asteroid
     state.m_a = 2.2e8; % kg, the mass of 2024 YR4 asteroid
 end
