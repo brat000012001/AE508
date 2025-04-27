@@ -11,17 +11,28 @@ to intercept an asteroid that is on a collision course with the Earth.
 
 ## Contents
 
-`final_report.m`  - plots the converged solutions. The converged solutions are in `reports/  tradeoff_studies_results_final.txt`.
-`eom.m` - computes the state and costate dynamics.
-`hamiltonian.m` - computes the Hamiltonian.
-`initial_values.m` - sets up the the location of the impactor on a departure orbit, the location of the asteroid, and other parameters.
-`lambert.m` - the Lambert's problem solver.
-`max_momentum.m` - evaluates the cost function.
-`plots.m` - a set of utility functions to plot the trajectory, states, the control and costates.
-`tradeoff_studies.m` - solves the asteroid intercept optimization problem by sweeping over thrust, longitude (true anomaly) and time of flight. Converged solutions are stored in `reports/tradeoff_studies_results.txt`.
-`two_body.m` - computes the two-body dynamics.
-`classical2posvel.m` - converts the classical orbital elements to the position/velocity vectors.
-`Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 4 days, the engine's thrust magnitude is assumed to be 1 Newton (see Hellic Engine https://ntrs.nasa.gov/api/citations/20190029294/downloads/20190029294.pdf), and the longitude (the true anomaly) on the departure orbit is 50 deg. 
+* `final_report.m`  - plots the converged solutions. The converged solutions are in `reports/  tradeoff_studies_results_final.txt`.
+
+* `eom.m` - computes the state and costate dynamics.
+
+* `hamiltonian.m` - computes the Hamiltonian.
+
+* `initial_values.m` - sets up the the location of the impactor on a departure orbit, the location of the asteroid, and other parameters.
+
+* `lambert.m` - the Lambert's problem solver.
+
+* `max_momentum.m` - evaluates the cost function.
+
+* `plots.m` - a set of utility functions to plot the trajectory, states, the control and costates.
+
+* `tradeoff_studies.m` - solves the asteroid intercept optimization problem by sweeping over thrust, longitude (true anomaly) and time of flight. Converged solutions are stored in `reports/tradeoff_studies_results.txt`.
+
+* `two_body.m` - computes the two-body dynamics.
+
+* `classical2posvel.m` - converts the classical orbital elements to the position/velocity vectors.
+
+* `Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 4 days, the engine's thrust magnitude is assumed to be 1 Newton (see Hellic Engine https://ntrs.nasa.gov/api/citations/20190029294/downloads/20190029294.pdf), and the longitude (the true anomaly) on the departure orbit is 50 deg. 
+
 `reports` - contains the plots to be included into the final report.
 
 ## Initial conditions
