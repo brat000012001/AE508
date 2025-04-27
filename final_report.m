@@ -26,34 +26,42 @@ solutions = results(~isnan(results(:,1)),:);
 % xf' (11:16)
 % p0' (17:23)
 
-thrusts = unique(solutions(:,4));
 default_state = initial_values();
-for thrustidx = 1:length(thrusts)
-    figure(thrustidx); hold on;
-    title(sprintf("Thrust %.3f", thrusts(thrustidx)));
-    by_thrust = solutions(solutions(:,4) == thrusts(thrustidx),:);
-    times = unique(by_thrust(:,2));
-    rows = idivide(size(times,1),int16(2));
-    if mod(size(times,1),2) > 0
+[~, Xast] = ode45(@two_body, [default_state.tf default_state.tf+86400], ...
+    [default_state.rf;default_state.vf], opts_ode, default_state.mu);
+
+times = unique(solutions(:,2));
+max_by_tof_thrust = [];
+for timeidx = 1:size(times,1)
+    figure(timeidx); hold on;
+    by_time = solutions(solutions(:,2) == times(timeidx),:);
+    thrusts = unique(by_time(:,4));
+    rows = idivide(size(thrusts,1),int16(2));
+    if mod(size(thrusts,1),2) > 0
         rows = rows + 1;
     end
 
     rows = double(rows);
-    for timeidx = 1:size(times,1)
-        if rows > 1
-            subplot(rows,2,timeidx); hold on;
-            title(sprintf("Thrust: %.1f N, ToF: %.2f days", thrusts(thrustidx), times(timeidx)/86400));
-            xlabel('x (km)');
-            ylabel('y (km)');
-            zlabel('z (km)');
-            plot3(default_state.rf(1),default_state.rf(2),default_state.rf(3),'r*','LineWidth',3);
+    for thrustidx = 1:length(thrusts)
+        if rows > 1 || length(thrusts) > 1
+            subplot(rows,2,thrustidx); hold on;
         end
-        by_time = by_thrust(by_thrust(:,2) == times(timeidx),:);
-        for rowidx = 1:size(by_time,1)
-            x = by_time(rowidx,:);
+        title(sprintf("Thrust: %.1f N, ToF: %.2f days", thrusts(thrustidx), times(timeidx)/86400));
+        xlabel('x (km)');
+        ylabel('y (km)');
+        zlabel('z (km)');
+        plot3(0,0,0,'b*','LineWidth',3);
+        plot3(default_state.rf(1),default_state.rf(2),default_state.rf(3),'r*','LineWidth',3);
+        plot3(Xast(:,1),Xast(:,2),Xast(:,3),'m--','LineWidth',1);
+        
+        by_thrust = by_time(by_time(:,4) == thrusts(thrustidx),:);
+         [~,maxidx] = max(by_thrust(:,1));
+         max_by_tof_thrust(size(max_by_tof_thrust,1)+1,:) = by_thrust(maxidx,:);
+        for rowidx = 1:size(by_thrust,1)
+            x = by_thrust(rowidx,:);
             p0 = x(17:23)';
             x0 = x(5:10)';
-            state_values = initial_values(x(3),x(2)/86400,0.0,thrusts(thrustidx));
+            state_values = initial_values(x(3),x(2)/86400,0.0,x(4));
             [~, X] = ode45(@eom, [state_values.t0 state_values.tf], ...
                 [x0; state_values.m0; p0(1:7)], ...
                 opts_ode, ...
@@ -63,9 +71,24 @@ for thrustidx = 1:length(thrusts)
                 state_values.mu);
     
             plot3(X(1,1),X(1,2),X(1,3),'g+','LineWidth',1);
-            plot3(X(:,1),X(:,2),X(:,3));
+
+            if rowidx == maxidx
+                plot3(X(:,1),X(:,2),X(:,3),'r--','LineWidth',1.5);
+            else
+                plot3(X(:,1),X(:,2),X(:,3));
+            end
         end
     end
     hold off;
 end
-
+%{
+x = solutions(:,2)/86400;
+y = solutions(:,4);
+z = solutions(:,1);
+xi = unique(x);
+yi = unique(y);
+[X,Y] = meshgrid(xi,yi);
+Z = reshape(z, size(X));
+figure;
+surf(X,Y,Z);
+%}

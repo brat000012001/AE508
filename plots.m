@@ -1,4 +1,5 @@
-function S = plots()
+function S = plots(mu)
+    addpath(".");
 
     function plot_control(t,X)
         u = X(:,11:13)./vecnorm(X(:,11:13),2,2);
@@ -24,10 +25,22 @@ function S = plots()
 
     function plot_trajectory(t, X, r0, rf)
         figure;
-        plot3(X(:,1),X(:,2),X(:,3));
+        plot3(X(:,1),X(:,2),X(:,3),'b-','LineWidth',1.5);
         hold on;
-        plot3(r0(1),r0(2),r0(3),'*b');
-        plot3(rf(1),rf(2),rf(3),'*g');
+        plot3(r0(1),r0(2),r0(3),'*b','LineWidth',3);
+        plot3(rf(1),rf(2),rf(3),'g*','LineWidth',3);
+
+        % Compute and plot a solution to Lambert's problem
+        [V1,V2] = lambert(r0,rf,t(end),mu,'pro');
+        opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
+        [Tlambert, Xlambert] = ode45(@two_body, [t(1) t(end)], ...
+            [r0; V1], opts_ode, mu);
+        plot3(Xlambert(:,1),Xlambert(:,2),Xlambert(:,3),'m--','LineWidth',1.5);
+        legend('Optimal Trajectory','Lambert Solution');
+        title(sprintf('Optimal (v=%.3f) vs Lambert (v2 = %.3f)',norm(X(end,4:6)),norm(V2)));
+        xlabel('x (km)');
+        ylabel('y (km)');
+        zlabel('z (km)');
         hold off;
     end
 
