@@ -32,6 +32,7 @@ default_state = initial_values();
 
 times = unique(solutions(:,2));
 max_by_tof_thrust = [];
+max_velocity = [];
 for timeidx = 1:size(times,1)
     figure(timeidx); hold on;
     by_time = solutions(solutions(:,2) == times(timeidx),:);
@@ -73,6 +74,7 @@ for timeidx = 1:size(times,1)
             plot3(X(1,1),X(1,2),X(1,3),'g+','LineWidth',1);
 
             if rowidx == maxidx
+                max_velocity(size(max_velocity,1)+1,:) = [by_thrust(maxidx,1), by_thrust(maxidx,4), X(end,4:6)];
                 plot3(X(:,1),X(:,2),X(:,3),'r--','LineWidth',1.5);
             else
                 plot3(X(:,1),X(:,2),X(:,3));

@@ -15,7 +15,7 @@ options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
-state_values = initial_values();
+state_values = initial_values(5.93411945678072,17,0,0.5);
 
 x0 = [state_values.r0;state_values.v0];
 xf = [state_values.rf;state_values.vf];
@@ -50,15 +50,6 @@ lam_guess = 1e-5*ones(7,1);
 
 % Propagate the asteroid trajectory
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
-[ta, Xa] = ode45(@two_body, [0 86400*1.2], ...
-    [state_values.rf; state_values.vf], ...
-    opts_ode, ...
-    state_values.mu);
-[tsp, Xsp] = ode45(@two_body, [0 86400], ...
-    [state_values.r0; state_values.v_geo], ...
-    opts_ode, ...
-    state_values.mu);
-
 %
 % Plot the Hamiltonian
 %
@@ -71,10 +62,8 @@ plot(t, H, 'LineWidth', 1.5);
 %
 % Plot the states, costates, control and the optimal trajectory
 %
-plotSet = plots();
-plotSet.trajectory(t,X,state_values.r0,state_values.rf); hold on;
-plot3(Xa(:,1),Xa(:,2),Xa(:,3),'LineWidth',1.5);
-plot3(Xsp(:,1),Xsp(:,2),Xsp(:,3),'LineWidth',1.5); hold off;
+plotSet = plots(state_values.mu);
+plotSet.trajectory(t,X,state_values.r0,state_values.v_geo, state_values.rf, state_values.vf); hold on;
 
 plotSet.states(t,X);
 plotSet.costates(t,X);

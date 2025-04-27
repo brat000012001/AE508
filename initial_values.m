@@ -17,8 +17,6 @@ function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitud
     %
     % Initial condition
     state.t0 = 0;
-    state.v_geo = [0, 3.0718591585665633, 0]'; % km/s the velocity of a GEO satellite
-                                      % computed using Vis-Viva Eqn
 
     R = 42241.095610673336; % the radius of a GEO orbit
 
@@ -40,6 +38,9 @@ function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitud
 
     [r0,v0] = classical2posvel(R, 0.0, 0.0, incl, 0.0, trueAnomaly, state.mu);
     state.r0 = r0; % km/s initial velocity
+    %state.v_geo = [0, 3.0718591585665633, 0]'; % km/s the velocity of a GEO satellite
+    %                                  % computed using Vis-Viva Eqn
+    state.v_geo = v0;
     state.v0 = sqrt(2*state.mu/R)*v0/norm(v0); % km/s initial velocity
     % The position of asteroid Apophis at 2462239.715277778, A.D. 2029-Apr-13 05:10:00.0000
     state.rf = [-2.956932341462374E+05, -2.043495023251738E+05, -9.847039118095844E+04]';
