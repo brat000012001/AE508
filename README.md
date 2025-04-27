@@ -31,7 +31,7 @@ to intercept an asteroid that is on a collision course with the Earth.
 
 * `classical2posvel.m` - converts the classical orbital elements to the position/velocity vectors.
 
-* `Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 4 days, the engine's thrust magnitude is assumed to be 1 Newton (see Hellic Engine https://ntrs.nasa.gov/api/citations/20190029294/downloads/20190029294.pdf), and the longitude (the true anomaly) on the departure orbit is 50 deg. 
+* `Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 17 days, the engine's thrust magnitude is 0.5 Newton, and the longitude (the true anomaly) on the departure orbit is 340 deg. 
 
 `reports` - contains the plots to be included into the final report.
 
