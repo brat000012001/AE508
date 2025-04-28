@@ -24,11 +24,15 @@ options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'UseParallel',false);
 
 filename = "reports/tradeoff_studies_results.txt";
-ar = (0:10:360)';
-times = flipud([4 5 6 7 8 9 10]');
-thrusts = flipud([0.05 0.1 0.25 0.5 1.0 1.5 2]');
+% ar = (0:10:360)';
+% times = flipud([5 6 7 8 9 10]');
+% thrusts = flipud([0.05 0.1 0.25 0.5 1.0 1.5 2]');
 
-figure(1); hold on;
+ar = (0:10:360)';
+times = flipud([17 18 19 20]');
+thrusts = flipud([0.05 0.1 0.25]');
+% thrusts = flipud([0.1 0.25 0.5 1.0 1.5 2 2.5]');
+
 for timeidx = 1:length(times)
     time_of_flight = times(timeidx);
     for thrustidx = 1:length(thrusts)
@@ -72,9 +76,7 @@ for timeidx = 1:length(times)
                     rho, ...
                     state_values.mu);
                 
-                dv = sqrt( X(end,7)^2*norm(X(end,4:6))^2 ...
-                    + state_values.m_a^2*norm(state_values.vf)^2 ...
-                    - 2*X(end,7)*state_values.m_a*dot(X(end,4:6),state_values.vf));
+                dv = X(end,7)*norm(X(end,4:6)' - state_values.vf);
         
                 M = [dv, state_values.tf, true_anomaly, thrust_magnitude, x0', xf', p0'];
         
@@ -83,7 +85,6 @@ for timeidx = 1:length(times)
                 else
                     writematrix(M,filename);
                 end
-                plot3(X(:,1),X(:,2),X(:,3));
             else
                 M = [NaN, state_values.tf, true_anomaly, thrust_magnitude, x0', xf', p0'];
                 if exist(filename, "file")
@@ -95,7 +96,7 @@ for timeidx = 1:length(times)
         end
     end
 end
-hold off;
+
 %{
 figure; hold on; grid on;
 plot(ar, dv,'b*','LineWidth', 1.5);
