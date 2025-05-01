@@ -60,7 +60,7 @@ and the true anomaly of the impactor spacecraft is 340 deg.
 In MATLAB, open `tradeoff_studies.m` and click `Run`. The script will sweep over the time of flight from 4 to 10 days, thrust magnitude between 0.05 and 10 N and the true anomaly angle of the impactor satellite on the departure orbit from 0 to 360 deg with 10 deg step. The script will generate the results and store them in `reports/tradeoff_studies_results.txt`
 
 ## Remarks
-Getting the solution to converge has been a challenge, especially when using low-thrust engine with the thrust magnitude less than 1 N and the time of flight > 10-15 days. The MATLAB environment frequently reported memory allocation errors when the time of flight exceeded 10 or 15 days. 
+Getting the solution to converge has been a challenge, especially when using low-thrust engine with the thrust magnitude less than 1 N and the time of flight > 10-15 days. The MATLAB environment frequently reported memory allocation errors when the time of flight exceeded 10 or 15 days. To mitigate the large memory requirement issues, use `linspace(t0,tf,1000)` to explicitly specify how the time interval is discretized.
 
 ## How the results compare to DART Mission
 According to the DART mission report (https://dart.jhuapl.edu/Mission/Impactor-Spacecraft.php#:~:text=DART%20navigated%20to%20crash%20itself,(580%20kilograms)%20at%20impact) the DART crashed into Dimorphos at a speed of approximately 6.1 km/s, with its total mass 580 kg at the time 
