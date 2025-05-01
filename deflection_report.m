@@ -65,7 +65,7 @@ for massidx = 1:length(asteroid_masses)
 end
 
 % Propagate forward the asteroid orbit using the position
-% and velocity of the asteroid at the time of impact.
+% and velocity of the asteroid at the time of impact in ECI
 [~, Xast] = ode45(@two_body, [0 86400], [default_values.rf;default_values.vf], ...
     opts_ode, default_values.mu);
 ast_to_earth_distances = vecnorm(Xast(:,1:3),2,2);
@@ -78,7 +78,8 @@ ast_to_earth_min_distance = min(ast_to_earth_distances);
 final_results = [];
 for idx = 1:size(asteroid_deltavs,1)
     x = asteroid_deltavs(idx,:);
-    [~, Xastnew] = ode45(@two_body, [0 86400], [default_values.rf;x(2:4)'], ...
+    vast_new = x(2:4)';
+    [~, Xastnew] = ode45(@two_body, [0 86400], [default_values.rf;vast_new], ...
         opts_ode, default_values.mu);
     Xastdist = vecnorm(Xastnew(:,1:3),2,2);
     closest_approach = min(Xastdist);
@@ -93,8 +94,6 @@ best_solutions = sorted(1:min(4,size(sorted,1)),:);
 
 % Plot the Earth and asteroid positions
 figure; hold on;
-plot3(0,0,0, 'g*','LineWidth',3);
-plot3(default_values.rf(1),default_values.rf(2),default_values.rf(3),'r*','LineWidth',3);
 % Plot the first four solutions 
 for bestidx = 1:size(best_solutions,1)
     row = best_solutions(bestidx,:);
@@ -111,6 +110,9 @@ msg3 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
     best_solutions(3,5),best_solutions(3,6),best_solutions(3,7)/86400,best_solutions(3,8));
 msg4 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
     best_solutions(4,5),best_solutions(4,6),best_solutions(4,7)/86400,best_solutions(4,8));
+
+plot3(0,0,0, 'g*','LineWidth',3);
+plot3(default_values.rf(1),default_values.rf(2),default_values.rf(3),'r*','LineWidth',3);
 
 title('Top 4 best solutions');
 xlabel('x (km)');

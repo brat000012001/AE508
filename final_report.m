@@ -27,8 +27,6 @@ solutions = results(~isnan(results(:,1)),:);
 % p0' (17:23)
 
 default_state = initial_values();
-[~, Xast] = ode45(@two_body, [default_state.tf default_state.tf+86400], ...
-    [default_state.rf;default_state.vf], opts_ode, default_state.mu);
 
 times = unique(solutions(:,2));
 max_by_tof_thrust = [];
@@ -53,7 +51,6 @@ for timeidx = 1:size(times,1)
         zlabel('z (km)');
         plot3(0,0,0,'b*','LineWidth',3);
         plot3(default_state.rf(1),default_state.rf(2),default_state.rf(3),'r*','LineWidth',3);
-        plot3(Xast(:,1),Xast(:,2),Xast(:,3),'m--','LineWidth',1);
         
         by_thrust = by_time(by_time(:,4) == thrusts(thrustidx),:);
          [~,maxidx] = max(by_thrust(:,1));
