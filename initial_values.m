@@ -11,7 +11,7 @@ function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitud
 % - timeOfFlight:    desired fixed time of flight. Specified in days.
 % - incl:            departure orbit inclination (radians). Default is 0 rad
 % - thrust_magnitude: Thrust Magnitude in N
-%
+
     addpath(".");
     state.mu = 398600.44; % the Earth's gravitational parameter 
     %
@@ -36,6 +36,26 @@ function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitud
         thrust_magnitude = 2.5;
     end
 
+    thrusts = [to_string(0.05),...
+        to_string(0.1),...
+        to_string(0.25),...
+        to_string(0.5),...
+        to_string(1.0),...
+        to_string(1.5),...
+        to_string(2),...
+        to_string(2.5)];
+    %specific_impulses = [4190.0 4000.0 3800.0 3100.0 2000.0 1500.0 1000.0
+    %900.0]; % converged for 2.0
+    specific_impulses = [4190.0 4000.0 3000.0 1000.0 800.0 650.0 400.0 250.0];
+    mapT2Isp = containers.Map(thrusts, specific_impulses);
+
+    if isKey(mapT2Isp,to_string(thrust_magnitude))
+        Isp = mapT2Isp(to_string(thrust_magnitude));
+    else
+        error("Unsupported thrust magnitude was detected.");
+    end
+    fprintf("Specified thrust %.3f N will use Isp=%.3f sec\n", thrust_magnitude, Isp);
+
     [r0,v0] = classical2posvel(R, 0.0, 0.0, incl, 0.0, trueAnomaly, state.mu);
     state.r0 = r0; % km/s initial velocity
     %state.v_geo = [0, 3.0718591585665633, 0]'; % km/s the velocity of a GEO satellite
@@ -49,10 +69,14 @@ function state = initial_values(trueAnomaly, timeOfFlight, incl, thrust_magnitud
     state.m0 = 500; % kg, the initial wet mass
     % The time of flight that makes sense given the 
     % satellite we want to hit the ateroid with is on a GEO orbit
-    state.Isp = 4190; % seconds, specific impulse
+    state.Isp = Isp; % seconds, specific impulse
     state.g0 = 9.8; % m/s^2 (Earth's surface gravity)
     state.c = state.Isp*state.g0/1000; % km/s Exhaust velocity
     state.T = thrust_magnitude/1000; % kN, Thrust magnitude
     % The mass of the hypothetical asteroid
     state.m_a = 2.2e8; % kg, the mass of 2024 YR4 asteroid
+
+    function s = to_string(d)
+        s = sprintf("%.2f", d);
+    end
 end

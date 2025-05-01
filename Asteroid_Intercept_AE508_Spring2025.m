@@ -15,7 +15,7 @@ options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
-state_values = initial_values(5.93411945678072,17,0,0.5);
+state_values = initial_values(1.91986217719376,864000/86400,0,1.0);
 
 x0 = [state_values.r0;state_values.v0];
 xf = [state_values.rf;state_values.vf];
