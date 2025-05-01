@@ -38,7 +38,7 @@ The script uses the estimated change in the asteroid velocity to propagate the a
 
 * `classical2posvel.m` - converts the classical orbital elements to the position/velocity vectors.
 
-* `Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 17 days, the engine's thrust magnitude is 0.5 Newton, and the longitude (the true anomaly) on the departure orbit is 340 deg. 
+* `Asteroid_Intercept_AE508_Spring2025.m` - solves the optimal trajectory problem, given the time of flight is 10 days, the engine's thrust magnitude is 1 Newton. 
 
 `reports` - contains the plots to be included into the final report.
 
