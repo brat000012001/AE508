@@ -25,13 +25,22 @@ options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
 
 filename = "reports/tradeoff_studies_results.txt";
 % ar = (0:10:360)';
-% times = flipud([5 6 7 8 9 10]');
-% thrusts = flipud([0.05 0.1 0.25 0.5 1.0 1.5 2]');
+% times = flipud([4 5 6 7 8 9 10]');
+% thrusts = flipud([0.25 0.5 1.0 1.5 2]');
+% specificImpulses = flipud([1800 1000 850 600 300 220 210]);
 
-ar = (0:10:360)';
-times = flipud([17 18 19 20]');
-thrusts = flipud([0.05 0.1 0.25]');
-% thrusts = flipud([0.1 0.25 0.5 1.0 1.5 2 2.5]');
+% ar = (0:10:360)';
+%times = flipud([4 5 6 7 8 9 10 14 16 17]');
+%times = flipud([4 5 6 7]');
+%thrusts = flipud([0.5 1.0 1.5 2]');
+
+% ar = (0:10:360)';
+% times = flipud([9 10]');
+% thrusts = flipud([0.5 1.0 1.5 2]');
+
+ar = (340:10:360)';
+times = flipud([9]');
+thrusts = flipud([0.5]');
 
 for timeidx = 1:length(times)
     time_of_flight = times(timeidx);
