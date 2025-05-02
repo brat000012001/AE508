@@ -80,14 +80,3 @@ for timeidx = 1:size(times,1)
     end
     hold off;
 end
-%{
-x = solutions(:,2)/86400;
-y = solutions(:,4);
-z = solutions(:,1);
-xi = unique(x);
-yi = unique(y);
-[X,Y] = meshgrid(xi,yi);
-Z = reshape(z, size(X));
-figure;
-surf(X,Y,Z);
-%}
