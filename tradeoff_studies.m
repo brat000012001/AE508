@@ -17,30 +17,15 @@ clearvars; close all; clc;
 format longg;
 addpath(".");
 
-%
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
 options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
-filename = "reports/tradeoff_studies_results.txt";
-% ar = (0:10:360)';
-% times = flipud([4 5 6 7 8 9 10]');
-% thrusts = flipud([0.25 0.5 1.0 1.5 2]');
-% specificImpulses = flipud([1800 1000 850 600 300 220 210]);
-
-% ar = (0:10:360)';
-%times = flipud([4 5 6 7 8 9 10 14 16 17]');
-%times = flipud([4 5 6 7]');
-%thrusts = flipud([0.5 1.0 1.5 2]');
-
-% ar = (0:10:360)';
-% times = flipud([9 10]');
-% thrusts = flipud([0.5 1.0 1.5 2]');
-
-ar = (340:10:360)';
-times = flipud([9]');
-thrusts = flipud([0.5]');
+filename = "reports/tradeoff_studies_results_final.txt";
+ar = (0:10:360)';
+times = flipud([4 5 6 7 8 9 10]');
+thrusts = flipud([0.25 0.5 1.0 1.5 2]');
 
 for timeidx = 1:length(times)
     time_of_flight = times(timeidx);
@@ -105,11 +90,3 @@ for timeidx = 1:length(times)
         end
     end
 end
-
-%{
-figure; hold on; grid on;
-plot(ar, dv,'b*','LineWidth', 1.5);
-xlabel('True Anomaly \nu (deg)');
-ylabel('Transfer Momentum Magnitude');
-hold off;
-%}
