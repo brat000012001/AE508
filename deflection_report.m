@@ -92,7 +92,6 @@ end
 sorted = sortrows(final_results,9,'descend');
 best_solutions = sorted(1:min(4,size(sorted,1)),:);
 
-% Plot the Earth and asteroid positions
 figure; hold on;
 % Plot the first four solutions 
 for bestidx = 1:size(best_solutions,1)
@@ -111,6 +110,7 @@ msg3 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
 msg4 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
     best_solutions(4,5),best_solutions(4,6),best_solutions(4,7)/86400,best_solutions(4,8));
 
+% Plot the Earth and asteroid positions
 plot3(0,0,0, 'g*','LineWidth',3);
 plot3(default_values.rf(1),default_values.rf(2),default_values.rf(3),'r*','LineWidth',3);
 
