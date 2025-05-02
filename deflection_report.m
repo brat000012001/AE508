@@ -35,7 +35,7 @@ for idx = 1:size(solutions,1)
     % p0' (17:23)
     p0 = x(17:23)';
     x0 = x(5:10)';
-    [v_tf,m_tf,~] = propagate(x, opts_ode);
+    [v_tf,m_tf,~,~] = propagate(x, opts_ode);
     spacecraft_velocity_at_impact(size(spacecraft_velocity_at_impact,1)+1,:) =...
         [idx,v_tf',m_tf,x(4),x(2)];
 end
@@ -97,7 +97,7 @@ figure; hold on;
 for bestidx = 1:size(best_solutions,1)
     row = best_solutions(bestidx,:);
     x = solutions(row(1),:);
-    [~,~,X] = propagate(x, opts_ode);
+    [~,~,t,X] = propagate(x, opts_ode);
     plot3(X(:,1),X(:,2),X(:,3)); hold on;
 end
 
@@ -121,7 +121,7 @@ zlabel('z (km)');
 legend(msg1,msg2,msg3,msg4,'Earth center', 'Asteroid @ t_f', 'Location','best');
 hold off;
 
-function [v_tf,m_tf,X] = propagate(x, opts_ode)
+function [v_tf,m_tf,t,X] = propagate(x, opts_ode)
     rho = 1.0;
     % dv (1)
     % tf (2)
@@ -133,7 +133,7 @@ function [v_tf,m_tf,X] = propagate(x, opts_ode)
     p0 = x(17:23)';
     x0 = x(5:10)';
     state_values = initial_values(x(3),x(2)/86400,0.0,x(4));
-    [~, X] = ode45(@eom, [state_values.t0 state_values.tf], ...
+    [t, X] = ode45(@eom, [state_values.t0 state_values.tf], ...
         [x0; state_values.m0; p0(1:7)], ...
         opts_ode, ...
         state_values.T, ...
