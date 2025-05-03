@@ -18,7 +18,7 @@ to intercept an asteroid that is on a collision course with the Earth.
 dv(tf) = beta*(m(tf)/m_ast(tf))*(v(tf) - v_ast(tf))
 ```
 Where `dv(tf),v(tf),v_ast(tf)` are vectors corresponding to the change in the asteroid velocity, the velocity of the impactor spacecraft at the time of impact and the velocity of the asteroid before the collision. The velocities are in ECI, and the masses are in kg. `beta=1` is a scaling parameter, and can be used to vary the amount of material ejected due to the collision. 
-The script uses the estimated change in the asteroid velocity to propagate the asteroid trajectory (two-body EOMs, no perturbing forces, ECI reference frame, the Earth is the primary central body, so this may not be correct) to find a set of solutions that would push the asteroid further away from the Earth. Finally, the script plots four best solutions, the estimated change in the velocity of the asteroid, the time of flight and the asteroid mass.
+The script uses the estimated change in the asteroid velocity to propagate the asteroid trajectory (two-body EOMs, no perturbing forces, ECI reference frame, the Earth is the primary central body, so this may not be correct) to find a set of solutions that would push the asteroid further away from the Earth. Finally, the script plots five best solutions, the estimated deflection distance, the time of flight and the asteroid mass.
 
 * `eom.m` - computes the state and costate dynamics.
 

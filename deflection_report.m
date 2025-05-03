@@ -91,7 +91,7 @@ end
 %
 % Sort by closest distance
 sorted = sortrows(final_results,9,'descend');
-best_solutions = sorted(1:min(4,size(sorted,1)),:);
+best_solutions = sorted(1:min(5,size(sorted,1)),:);
 
 figure; hold on;
 % Plot the first four solutions 
@@ -111,12 +111,14 @@ msg3 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f 
     best_solutions(3,9),best_solutions(3,6),best_solutions(3,7)/86400,best_solutions(3,8));
 msg4 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
     best_solutions(4,9),best_solutions(4,6),best_solutions(4,7)/86400,best_solutions(4,8));
+msg5 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
+    best_solutions(5,9),best_solutions(5,6),best_solutions(5,7)/86400,best_solutions(5,8));
 
 % Plot the Earth and asteroid positions
 plot3(0,0,0, 'b*','LineWidth',3);
 plot3(default_values.rf(1),default_values.rf(2),default_values.rf(3),'r*','LineWidth',3);
 
-title('Top 4 best solutions (maximize the deflection distance)');
+title('Top five best solutions (maximize the deflection distance)');
 xlabel('x (km)');
 ylabel('y (km)');
 zlabel('z (km)');
@@ -125,6 +127,7 @@ legend( ...
     msg2, "SC2 @t_0", ...
     msg3, "SC3 @t_0", ...
     msg4, "SC4 @t_0", ...
+    msg5, "SC5 @t_0", ...
     'Earth center', 'Asteroid @ t_f', 'Location','best');
 hold off;
 
