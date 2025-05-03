@@ -84,7 +84,8 @@ for idx = 1:size(asteroid_deltavs,1)
     Xastdist = vecnorm(Xastnew(:,1:3),2,2);
     closest_approach = min(Xastdist);
     if closest_approach > ast_to_earth_min_distance
-        final_results(size(final_results,1)+1,:) = [x, closest_approach];
+        final_results(size(final_results,1)+1,:) = ...
+            [x, closest_approach - ast_to_earth_min_distance];
     end
 end
 %
@@ -99,26 +100,32 @@ for bestidx = 1:size(best_solutions,1)
     x = solutions(row(1),:);
     [~,~,t,X] = propagate(x, opts_ode);
     plot3(X(:,1),X(:,2),X(:,3)); hold on;
+    plot3(X(1,1),X(1,2),X(1,3),'g*','LineWidth',1.5);
 end
 
-msg1 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
-    best_solutions(1,5),best_solutions(1,6),best_solutions(1,7)/86400,best_solutions(1,8));
-msg2 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
-    best_solutions(2,5),best_solutions(2,6),best_solutions(2,7)/86400,best_solutions(2,8));
-msg3 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
-    best_solutions(3,5),best_solutions(3,6),best_solutions(3,7)/86400,best_solutions(3,8));
-msg4 = sprintf("dv=%g km/s, T=%.1f N, t_f=%.1f days, m_ast=%.3f", ...
-    best_solutions(4,5),best_solutions(4,6),best_solutions(4,7)/86400,best_solutions(4,8));
+msg1 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
+    best_solutions(1,9),best_solutions(1,6),best_solutions(1,7)/86400,best_solutions(1,8));
+msg2 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
+    best_solutions(2,9),best_solutions(2,6),best_solutions(2,7)/86400,best_solutions(2,8));
+msg3 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
+    best_solutions(3,9),best_solutions(3,6),best_solutions(3,7)/86400,best_solutions(3,8));
+msg4 = sprintf("|\\Delta{r_{min}}|=%g km, T=%.1f N, t_f=%.1f days, m_{AST}=%.1f kg", ...
+    best_solutions(4,9),best_solutions(4,6),best_solutions(4,7)/86400,best_solutions(4,8));
 
 % Plot the Earth and asteroid positions
-plot3(0,0,0, 'g*','LineWidth',3);
+plot3(0,0,0, 'b*','LineWidth',3);
 plot3(default_values.rf(1),default_values.rf(2),default_values.rf(3),'r*','LineWidth',3);
 
-title('Top 4 best solutions');
+title('Top 4 best solutions (maximize the deflection distance)');
 xlabel('x (km)');
 ylabel('y (km)');
 zlabel('z (km)');
-legend(msg1,msg2,msg3,msg4,'Earth center', 'Asteroid @ t_f', 'Location','best');
+legend( ...
+    msg1, "SC1 @t_0", ...
+    msg2, "SC2 @t_0", ...
+    msg3, "SC3 @t_0", ...
+    msg4, "SC4 @t_0", ...
+    'Earth center', 'Asteroid @ t_f', 'Location','best');
 hold off;
 
 function [v_tf,m_tf,t,X] = propagate(x, opts_ode)
