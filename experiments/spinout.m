@@ -43,23 +43,14 @@ rf = [-1.096812308683544e+06, -9.292488001004120e+05, -4.114552797159857e+05]'; 
 % vf = [4.206778300537007E+00, 3.801730069720992E+00, 1.639412680210433E+00]'; % the final velocity
 % mass is free at final time
 
-% tf = 2462237.520833333; % A.D. 2029-Apr-11 00:30:00.0000 as Julian Date
-theta = acos((r0/norm(r0))'*(rf/norm(rf)));
-c = sqrt(r0'*r0 + rf'*rf - 2*norm(r0)*norm(rf)*cos(theta));
-s = (norm(r0) + norm(rf) + c)/2;
-% Minimum time of flight
-t_p = sqrt(2)/(3*sqrt(mu_e))*(sqrt(s^3) - sign(sin(theta))*sqrt((s - c)^3));
-
-% The time of flight that makes sense given the 
-% satellite we want to hit the ateroid with is on a GEO orbit
-tf = t_p; % time of flight, in seconds
+tf = 86400*65; % time of flight, in seconds
 
 opts_ode = odeset('RelTol',1e-13,'AbsTol',1e-15); % ode
 options = optimoptions('fsolve','Display','iter','MaxFunEvals',1e3,...
     'MaxIter',1e3,'TolFun',1e-12,'TolX',1e-14,...
     'UseParallel',false);
 
-T = 1.5935/1000; % kN, Thrust magnitude
+T = 0.1/1000; % kN, Thrust magnitude
 Isp = 4190; % seconds, specific impulse
 g0 = 9.8; % m/s^2 (Earth's surface gravity)
 c = Isp*g0/1000; % km/s Exhaust velocity
